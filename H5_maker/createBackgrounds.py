@@ -109,7 +109,6 @@ if __name__=='__main__':
 	        print('ERROR: unknown truth label - {}'.format(process))
 	        continue
 	    # get all the files
-	    #fNames = glob.glob('/eos/uscms/{}*.root'.format(path))	# doesn't work on lxplus
 	    fNames = subprocess.check_output(['{} {}'.format(eosls,path)],shell=True).split('\n')
 	    fNames.remove('')
 	    fNames.remove('log')
@@ -120,14 +119,20 @@ if __name__=='__main__':
 		print('Converting file {}/{}'.format(sum,len(fNames)))
 		# get the last part 
 		fName = fName.split('/')[-1]
-	        # run the h5 maker
-	        print('Running python make_h5_local.py -i {}{}{} -o {}/{}/{}/{}.h5 -y {} -f {}'.format(redirector, path, fName, output_dir, year, process, fName, year if 'APV' in year else 2016, f))
-	        subprocess.call('python make_h5_local.py -i {}{}{} -o {}/{}/{}/{}.h5 -y {} -f {}'.format(redirector,
+		# check to see if we've made this h5 sample yet
+		existingFiles = glob.glob('{0}/{1}/{2}/*.h5'.format(output_dir, year, process))
+		if '{}/{}/{}/{}.h5'.format(output_dir, year, process, fName.split('.')[0]) in existingFiles:
+		    print('{}/{}/{}/{}.h5 already created, skipping'.format(output_dir, year, process, fName.split('.')[0]))
+		    continue
+		else:
+	            # run the h5 maker
+	            print('Running python make_h5_local.py -i {}{}{} -o {}/{}/{}/{}.h5 -y {} -f {}'.format(redirector, path, fName, output_dir, year, process, fName.split('.')[0], year if 'APV' in year else 2016, f))
+	            subprocess.call('python make_h5_local.py -i {}{}{} -o {}/{}/{}/{}.h5 -y {} -f {}'.format(redirector,
 												    path,
 												    fName, 
 												    output_dir, 
 												    year, 
 												    process,
-												    fName, 
+												    fName.split('.')[0], 
 												    year if 'APV' in year else 2016, 
 												    f), shell=True)
