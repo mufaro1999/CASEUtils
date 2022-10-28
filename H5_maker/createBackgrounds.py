@@ -2,8 +2,10 @@ import subprocess
 import glob 
 import os
 from collections import OrderedDict
+import sys
 
 redirector = 'root://cmsxrootd.fnal.gov/'
+eosls = 'eos root://cmseos.fnal.gov ls'
 
 datasets = {
     "2016": {
@@ -107,9 +109,15 @@ if __name__=='__main__':
 	        print('ERROR: unknown truth label - {}'.format(process))
 	        continue
 	    # get all the files
-	    fNames = glob.glob('/eos/uscms/{}*.root'.format(path))
-	    print(len(fNames))
+	    #fNames = glob.glob('/eos/uscms/{}*.root'.format(path))	# doesn't work on lxplus
+	    fNames = subprocess.check_output(['{} {}'.format(eosls,path)],shell=True).split('\n')
+	    fNames.remove('')
+	    fNames.remove('log')
+	    print('Need to convert {} files'.format(len(fNames)))
+	    sum = 0
 	    for fName in fNames:
+		sum += 1
+		print('Converting file {}/{}'.format(sum,len(fNames)))
 		# get the last part 
 		fName = fName.split('/')[-1]
 	        # run the h5 maker
