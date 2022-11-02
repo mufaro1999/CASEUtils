@@ -513,9 +513,9 @@ def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.roo
     elif (year == 2016.5):
         triggers = ["HLT_PFHT900", "HLT_PFJet450", "HLT_AK8PFJet450"]
     elif(year == 2017):
-        triggers = ["HLT_PFHT1050", "HLT_AK8PFJet500"]
+        triggers = ["HLT_PFHT1050", "HLT_AK8PFJet500", "HLT_AK8PFJet380_TrimMass30", "HLT_AK8PFJet400_TrimMass30"]
     elif(year == 2018):
-        triggers = ["HLT_PFHT1050", "HLT_AK8PFJet500"]
+        triggers = ["HLT_PFHT1050", "HLT_AK8PFJet500", "HLT_AK8PFJet380_TrimMass30", "HLT_AK8PFJet400_TrimMass30"]
     else:
         print("Invalid year option of %i. Year must be 2016, 2017, or 2018! \n" % year)
         exit(1)
@@ -552,6 +552,7 @@ def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.roo
 
         #get input tree
         TTree = inputFile.Get("Events")
+	print('Events: {}'.format(TTree))
 
         # pre-skimming
         if(json != ''):
@@ -584,10 +585,13 @@ def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.roo
 
 
 # -------- Begin Loop over tree-------------------------------------
+        filFailCount = 0
+        trigFailCount = 0
 
         entries = inTree.entries
+	print('entries = {}'.format(entries))
         for entry in xrange(entries):
-
+	    #print('entry: {}'.format(entry))
 
             if count % 10000 == 0 :
                 print('--------- Processing Event ' + str(count) +'   -- percent complete ' + str(100*count/nTotal/nFiles) + '% -- ')
@@ -595,24 +599,22 @@ def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.roo
             count +=1
             # Grab the event
             event = Event(inTree, entry)
-
-
-
             
             passTrigger = False
             passFilter = True
             for fil in filters:
                 passFilter = passFilter and inTree.readBranch(fil)
             if(not passFilter): 
+		filFailCount+=1
                 continue
             
             # Apply triggers only to data and MC
             for trig in triggers:
                 passTrigger = passTrigger or inTree.readBranch(trig)
 
-            if(not passTrigger): continue
-
-
+            if(not passTrigger): 
+		trigFailCount+=1
+		continue
 
             PFCands = Collection(event, "FatJetPFCands")
                         
@@ -811,6 +813,10 @@ def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.roo
             saved+=1
             out.fill_event(inTree, event, jet1, jet2, jet3, PFCands, subjets, mjj, num_jets)
             if(nEventsMax > 0 and saved >= nEventsMax): break
+
+        print('{}/{} = {}% of events failed filters'.format(filFailCount,entries,float(filFailCount)/float(entries)*100))
+        print('{}/{} = {}% of events failed triggers'.format(trigFailCount,entries,float(trigFailCount)/float(entries)*100))
+
 # -------- End Loop over tree-------------------------------------
 # -------- End Loop over files-------------------------------------
 
