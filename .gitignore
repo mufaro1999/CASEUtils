@@ -9,3 +9,9 @@
 *.root
 *.pyc
 *__pycache__*
+*.stderr
+*.stdout
+*.log
+*_jdl
+*.tgz
+docker_stderror
