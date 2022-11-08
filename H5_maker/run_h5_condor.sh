@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "H5 conversion script starting"
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-xrdcp root://cmseos.fnal.gov//store/user/ammitra/H5_env.tgz ./
+xrdcp root://cmseos.fnal.gov//store/user/mchitoto/H5_env.tgz ./
 export SCRAM_ARCH=slc7_amd64_gcc820
 scramv1 project CMSSW CMSSW_11_1_4
 tar -xzvf H5_env.tgz
@@ -18,4 +18,4 @@ eval `scramv1 runtime -sh`
 echo python run_h5_condor.py $* 
 python run_h5_condor.py $*
 
-xrdcp -f *.h5 root://cmseos.fnal.gov//store/user/ammitra/H5_output/
+xrdcp -f *.h5 root://cmseos.fnal.gov//store/user/mchitoto/H5_output/
