@@ -110,8 +110,8 @@ class Outputer:
         self.jet2_PFCands = np.zeros((self.batch_size, self.n_pf_cands, 4), dtype=np.float16)
         self.jet1_SVs = np.zeros((self.batch_size, self.n_SVs,6), dtype=np.float32)
         self.jet2_SVs = np.zeros((self.batch_size, self.n_SVs, 6), dtype=np.float32)
-        self.jet1_extraInfo = np.zeros((self.batch_size, 7), dtype=np.float32)
-        self.jet2_extraInfo = np.zeros((self.batch_size, 7), dtype=np.float32)
+        self.jet1_extraInfo = np.zeros((self.batch_size, 11), dtype=np.float32)
+        self.jet2_extraInfo = np.zeros((self.batch_size, 11), dtype=np.float32)
         self.jet_kinematics = np.zeros((self.batch_size, 14), dtype=np.float32)
         self.event_info = np.zeros((self.batch_size, 8), dtype=np.float32)
         self.sys_weights = np.zeros((self.batch_size, 21), dtype=np.float32)
@@ -315,9 +315,13 @@ class Outputer:
             jet2_btag = subjets[jet2.subJetIdx1].btagDeepB
         if(jet2.subJetIdx2 >= 0):
             jet2_btag = max(jet2_btag, subjets[jet2.subJetIdx2].btagDeepB)
+	
+	#DEBUG
+        print('DEBUG: type(jet1.tau4):', type(jet1.tau4))
+        test_MDW = (jet1.particleNetMD_Xqq + jet1.particleNetMD_Xcc) / (jet1.particleNetMD_Xqq + jet1.particleNetMD_Xcc + jet1.particleNetMD_QCD) 
 
-        jet1_extraInfo = [jet1.tau1, jet1.tau2, jet1.tau3, jet1.tau4, jet1.lsf3, jet1_btag, jet1.nPFConstituents]
-        jet2_extraInfo = [jet2.tau1, jet2.tau2, jet2.tau3, jet2.tau4, jet2.lsf3, jet2_btag, jet2.nPFConstituents]
+        jet1_extraInfo = [jet1.tau1, jet1.tau2, jet1.tau3, jet1.tau4, jet1.lsf3, jet1_btag, jet1.nPFConstituents,jet1.particleNetMD_Xbb,jet1.particleNetMD_QCD,jet1.particleNetMD_Xqq,jet1.particleNetMD_Xcc]
+        jet2_extraInfo = [jet2.tau1, jet2.tau2, jet2.tau3, jet2.tau4, jet2.lsf3, jet2_btag, jet2.nPFConstituents,jet2.particleNetMD_Xbb,jet2.particleNetMD_QCD,jet2.particleNetMD_Xqq,jet2.particleNetMD_Xcc]
         #print(jet1.PFConstituents_Start, jet1.PFConstituents_Start + jet1.nPFConstituents, jet2.PFConstituents_Start, jet2.PFConstituents_Start + jet2.nPFConstituents)
 
         j1_nPF = min(self.n_pf_cands, jet1.nPFConstituents)
