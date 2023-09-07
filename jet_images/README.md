@@ -1,0 +1,3 @@
+Because of data limitations I couldnt upload all the raw data I have onto github but in an identical location on lpc address "/uscms/home/mchitoto/nobackup/XtoHY/CMSSW_11_1_4/src/CASEUtils" 
+you can find the data. In there I have a folder called analysis_note_jets with the 2016,2017 and 2018 jetHT data converted to images saved in H5_format. The subfolders labeled 2016, 2016APV, 2017 and 2018 
+contain the jetHT data files split plit into multiple smaller files while in the general analysis_note_jets folder there are .h5 datasets which is the jetimage datasets mentioned before merged into a singular large file.
