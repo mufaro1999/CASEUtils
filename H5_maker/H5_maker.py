@@ -85,9 +85,9 @@ def get_branch_mean(inTree, branch_name):
 
 
 class Outputer:
-    def __init__(self, outputFileName="out.root", batch_size = 5000, truth_label = 0, sample_type="MC", 
+    def __init__(self, outputFileName="out.root", batch_size = 5000, truth_label = 0, sample_type="data", 
             sort_pfcands = False, include_systematics = True, do_top_ptrw = False, year = 2017):
-
+        print("got here")
         self.batch_size = batch_size
         self.output_name = outputFileName
         self.sample_type = sample_type
@@ -110,8 +110,8 @@ class Outputer:
         self.jet2_PFCands = np.zeros((self.batch_size, self.n_pf_cands, 4), dtype=np.float16)
         self.jet1_SVs = np.zeros((self.batch_size, self.n_SVs,6), dtype=np.float32)
         self.jet2_SVs = np.zeros((self.batch_size, self.n_SVs, 6), dtype=np.float32)
-        self.jet1_extraInfo = np.zeros((self.batch_size, 11), dtype=np.float32)
-        self.jet2_extraInfo = np.zeros((self.batch_size, 11), dtype=np.float32)
+        self.jet1_extraInfo = np.zeros((self.batch_size, 10), dtype=np.float32)
+        self.jet2_extraInfo = np.zeros((self.batch_size, 10), dtype=np.float32)
         self.jet_kinematics = np.zeros((self.batch_size, 14), dtype=np.float32)
         self.event_info = np.zeros((self.batch_size, 8), dtype=np.float32)
         self.sys_weights = np.zeros((self.batch_size, 21), dtype=np.float32)
@@ -316,12 +316,17 @@ class Outputer:
         if(jet2.subJetIdx2 >= 0):
             jet2_btag = max(jet2_btag, subjets[jet2.subJetIdx2].btagDeepB)
 	
-	#DEBUG
-        print('DEBUG: type(jet1.tau4):', type(jet1.tau4))
-        test_MDW = (jet1.particleNetMD_Xqq + jet1.particleNetMD_Xcc) / (jet1.particleNetMD_Xqq + jet1.particleNetMD_Xcc + jet1.particleNetMD_QCD) 
+	
+       # Hbb Tagger and MDW 
+        jet1_MDW = (jet1.particleNetMD_Xqq + jet1.particleNetMD_Xcc) / (jet1.particleNetMD_Xqq + jet1.particleNetMD_Xcc + jet1.particleNetMD_QCD)
+        jet2_MDW = (jet2.particleNetMD_Xqq + jet2.particleNetMD_Xcc) / (jet2.particleNetMD_Xqq + jet2.particleNetMD_Xcc + jet2.particleNetMD_QCD)
+        jet1_HbbTag = jet1.particleNetMD_Xbb/(jet1.particleNetMD_Xbb + jet1.particleNetMD_QCD)
+        jet2_HbbTag = jet2.particleNetMD_Xbb/(jet2.particleNetMD_Xbb + jet2.particleNetMD_QCD) 
+        jet1_toptag = jet1.particleNet_TvsQCD
+        jet2_toptag = jet2.particleNet_TvsQCD 
 
-        jet1_extraInfo = [jet1.tau1, jet1.tau2, jet1.tau3, jet1.tau4, jet1.lsf3, jet1_btag, jet1.nPFConstituents,jet1.particleNetMD_Xbb,jet1.particleNetMD_QCD,jet1.particleNetMD_Xqq,jet1.particleNetMD_Xcc]
-        jet2_extraInfo = [jet2.tau1, jet2.tau2, jet2.tau3, jet2.tau4, jet2.lsf3, jet2_btag, jet2.nPFConstituents,jet2.particleNetMD_Xbb,jet2.particleNetMD_QCD,jet2.particleNetMD_Xqq,jet2.particleNetMD_Xcc]
+        jet1_extraInfo = [jet1.tau1, jet1.tau2, jet1.tau3, jet1.tau4, jet1.lsf3, jet1_btag, jet1.nPFConstituents,jet1_MDW,jet1_HbbTag,jet1_toptag]
+        jet2_extraInfo = [jet2.tau1, jet2.tau2, jet2.tau3, jet2.tau4, jet2.lsf3, jet2_btag, jet2.nPFConstituents,jet2_MDW,jet2_HbbTag,jet2_toptag]
         #print(jet1.PFConstituents_Start, jet1.PFConstituents_Start + jet1.nPFConstituents, jet2.PFConstituents_Start, jet2.PFConstituents_Start + jet2.nPFConstituents)
 
         j1_nPF = min(self.n_pf_cands, jet1.nPFConstituents)
@@ -491,14 +496,14 @@ class Outputer:
 
 
 
-def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.root", json = '', year = 2016, nEventsMax = -1, sampleType = "MC", 
-        sort_pfcands=True,  include_systematics = False, do_top_ptrw = False):
+def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.root", json = '', year = 2016, nEventsMax = -1, sampleType = "data", 
+        sort_pfcands=True,  include_systematics = True, do_top_ptrw = False):
     
     if not ((sampleType == "MC") or (sampleType=="data")):
         print("Error! sampleType needs to be set to either data or MC! Please set correct option and retry.")
         sys.exit()
     
-    #Applying standard MET filters: https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Analysis_Recommendations_for_ana
+    #Applying stpython make_h5_local.py -i input_file.root -o output_file.h5 -y 201X -f 0andard MET filters: https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Analysis_Recommendations_for_ana
     filters = ["Flag_goodVertices",
     "Flag_globalSuperTightHalo2016Filter",
     "Flag_HBHENoiseFilter",
@@ -591,7 +596,7 @@ def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.roo
 # -------- Begin Loop over tree-------------------------------------
         filFailCount = 0
         trigFailCount = 0
-
+        printed = False
         entries = inTree.entries
 	print('entries = {}'.format(entries))
         for entry in xrange(entries):
@@ -613,8 +618,13 @@ def NanoReader(process_flag, inputFileNames=["in.root"], outputFileName="out.roo
                 continue
             
             # Apply triggers only to data and MC
+            
             for trig in triggers:
-                passTrigger = passTrigger or inTree.readBranch(trig)
+                try:
+                    passTrigger = passTrigger or inTree.readBranch(trig)
+                except:
+                    if(not printed): print("Trigger %s  not found" % trig)
+                    printed = True
 
             if(not passTrigger): 
 		trigFailCount+=1

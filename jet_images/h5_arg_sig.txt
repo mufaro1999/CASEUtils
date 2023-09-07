@@ -1,0 +1,5 @@
+ -i ../H5_maker/actual_merged_signalData/MX2000_MY190_merged_files.h5 -o MX2000_MY190_merged_files.h5
+ -i ../H5_maker/actual_merged_signalData/MX2200_MY250_merged_files.h5 -o MX2200_MY250_merged_files.h5
+ -i ../H5_maker/actual_merged_signalData/MX2400_MY300_merged_files.h5 -o MX2400_MY300_merged_files.h5
+ -i ../H5_maker/actual_merged_signalData/MX3000_MY300_merged_files.h5 -o MX3000_MY300_merged_files.h5
+ -i ../H5_maker/actual_merged_signalData/MX3000_MY400_merged_files.h5 -o MX3000_MY400_merged_files.h5
